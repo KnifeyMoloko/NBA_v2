@@ -1,0 +1,2 @@
+TODO: test out nba-apis getters for Scoreboard
+TODO: creare SQL Alchemy model for Scoreboard (using SQLite for now)
