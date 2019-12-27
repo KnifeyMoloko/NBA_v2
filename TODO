@@ -1,2 +1,3 @@
 TODO: test out nba-apis getters for Scoreboard
-TODO: creare SQL Alchemy model for Scoreboard (using SQLite for now)
+TODO: create SQL Alchemy model for Scoreboard (using SQLite for now)
+TODO: general flow: 1. get scoreboard data frames for lines score and standings, 2. filter the dfs 3. commit to db
