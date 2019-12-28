@@ -8,7 +8,8 @@ LOGGING = {
     "disable_existing_loggers": True,
     "formatters": {
         "simple": {
-            "format": '%(asctime)s::%(levelname)s::%(message)s'
+            "format": '%(asctime)s::%(name)s::%(levelname)s::%(message)s',
+            "datefmt": '%Y-%m-%d %I:%M:%S'
         }
     },
     "handlers": {
@@ -23,7 +24,7 @@ LOGGING = {
             "formatter": "simple",
             "maxBytes": 2048,
             "backupCount": 3,
-            "filename": "./logs/nba_runs.log"
+            "filename": "./tests/logs/nba_test.log"
         }
     },
     "loggers": {
