@@ -9,7 +9,6 @@ import logging, logging.config
 from config import LOGGING
 from pandas import date_range
 from datetime import date
-from pprint import pprint
 from nba_api.stats.endpoints import scoreboardv2
 
 

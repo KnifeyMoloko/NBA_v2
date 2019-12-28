@@ -14,10 +14,10 @@ from app.collect import fetch_scoreboard_data
 @pytest.fixture()
 def define_test_dates():
     dfmt = "%Y/%m/%d"
-    start = date(2019, 11, 1).strftime(dfmt)
-    end = date(2019, 11, 30).strftime(dfmt)
+    start = date(2019, 11, 1)
+    end = date(2019, 11, 30)
     middle = date(2019, 11, 15).strftime(dfmt)
-    return (start, end, middle)
+    return start, end, middle
 
 
 def test_fetch_scoreboard_data_returns_dict(define_test_dates):
