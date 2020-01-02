@@ -49,6 +49,5 @@ def fetch_scoreboard_data(start_date: date = None, end_date: date = None) -> dic
         logger.debug(f"Packing output for {d} into dict")
         period_out[day] = {k: v for k, v in zip(headers, frames)}
     logger.info(f"Found {len(period_out)} items after looping through"
-                f"scoreboard data.")
+                f" scoreboard data.")
     return period_out
-

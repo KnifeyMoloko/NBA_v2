@@ -3,6 +3,8 @@ Logger configuration dict for the NBA_v2 app
 Author: Maciej Cisowski
 """
 
+
+# logger config
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,
@@ -33,4 +35,11 @@ LOGGING = {
             'handlers': ['console', 'file']
         }
     }
+}
+
+
+# default values for the db config
+DB = {
+    "url": 'sqlite://',
+    "port": None
 }
