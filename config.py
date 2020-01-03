@@ -1,8 +1,10 @@
 """
-Logger configuration dict for the NBA_v2 app
+Configuration dicts for the NBA_v2 app
 Author: Maciej Cisowski
 """
 
+# app name
+NBA_APP_NAME = "NBA"
 
 # logger config
 LOGGING = {
@@ -26,7 +28,7 @@ LOGGING = {
             "formatter": "simple",
             "maxBytes": 2048,
             "backupCount": 3,
-            "filename": "./tests/logs/nba_test.log"
+            "filename": "./logs/nba_test.log"
         }
     },
     "loggers": {
@@ -38,8 +40,8 @@ LOGGING = {
 }
 
 
-# default values for the db config
+# default values for the db config; overwrite with same-named env vars for secrets
 DB = {
-    "url": 'sqlite://',
-    "port": None
+    "NBA_DB_URL": 'sqlite://',
+    "NBA_DB_PORT": None,
 }

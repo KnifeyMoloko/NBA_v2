@@ -1,4 +1,4 @@
-TODO: create a function for gathering command line arguments, especially for DB config
+TODO: revisit files for missing documentation or comments
 TODO: Postgres integration
 TODO: minimum upload validation: row count of target db vs. row count of target db + row count for payload
 TODO: general flow: 1. get scoreboard data frames for lines score and standings, 2. filter the dfs 3. commit to db
