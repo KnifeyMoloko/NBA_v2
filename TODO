@@ -1,4 +1,9 @@
-TODO: revisit files for missing documentation or comments
-TODO: Postgres integration
+TODO: add optional timeout between api calls to the collect functions
+TODO: make the collect funcs default to today as their start and end date (use config for that?)
+TODO: data manipulation 1: right join the line score rows on the game sequence value
+TODO: Postgres integration 1: establish connection using Heroku Postgres URL as env var
+TODO: Postgres integration 2: line score, series standing and last meeting can be just appended
+TODO: Postgres integration 3: east and west coast standings should be replaced rather than appedned (make append optional)
 TODO: minimum upload validation: row count of target db vs. row count of target db + row count for payload
 TODO: general flow: 1. get scoreboard data frames for lines score and standings, 2. filter the dfs 3. commit to db
+TODO: (Optional) make a SQLAlchemy Model factory class using the headers DFrame, dtype to SQLAlchemy type mapping

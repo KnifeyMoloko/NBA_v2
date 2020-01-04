@@ -1,17 +1,18 @@
 """
-Functions for collecting the endpoints data from NBA.com
-using nba-api.
+Functions for collecting the endpoint's data from NBA.com
+using nba-api by Swar Patel (swar): https://github.com/swar/nba_api
 Auhtor: Maciej Cisowski
 """
 
 
-import logging, logging.config
+import logging.config
 from config import LOGGING
 from pandas import date_range
 from datetime import date
 from nba_api.stats.endpoints import scoreboardv2
 
 
+# create logger for this module and configure it
 logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("nba_v2.collect")
 

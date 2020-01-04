@@ -42,6 +42,5 @@ LOGGING = {
 
 # default values for the db config; overwrite with same-named env vars for secrets
 DB = {
-    "NBA_DB_URL": 'sqlite://',
-    "NBA_DB_PORT": None,
+    "NBA_DB_URL": 'sqlite://'
 }
