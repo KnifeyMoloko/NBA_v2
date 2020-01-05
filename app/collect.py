@@ -18,8 +18,8 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("nba_v2.collect")
 
 
-def fetch_scoreboard_data(start_date: date = None,
-                          end_date: date = None,
+def fetch_scoreboard_data(start_date: date = date.today(),
+                          end_date: date = date.today(),
                           timeout_days: int = TIMEOUT_INTERVAL,
                           timeout_secs: int = TIMEOUT_SECS) -> dict:
     """
@@ -44,8 +44,10 @@ def fetch_scoreboard_data(start_date: date = None,
     :param timeout_secs: int for number of seconds to wait between
     request intervals
     :param timeout_days: number of days in a request interval
-    :param start_date: datetime.date object representing start date
-    :param end_date: datetime.date object representing end date
+    :param start_date: datetime.date object representing start date,
+    defaults to today
+    :param end_date: datetime.date object representing end date,
+    defaults to today
     :return: period_out dict of daily dicts with DataFrame objects
     :rtype: dict
     """

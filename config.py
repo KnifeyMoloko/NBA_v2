@@ -32,7 +32,7 @@ LOGGING = {
             "formatter": "simple",
             "maxBytes": 20480,
             "backupCount": 3,
-            "filename": "./tests/logs/nba_test.log"
+            "filename": "./logs/nba_test.log"
         }
     },
     "loggers": {

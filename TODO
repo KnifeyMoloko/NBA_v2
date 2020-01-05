@@ -1,5 +1,4 @@
-TODO: add optional timeout between api calls to the collect functions
-TODO: make the collect funcs default to today as their start and end date (use config for that?)
+TODO: add a argv parser for start and end date params from the CLI
 TODO: data manipulation 1: right join the line score rows on the game sequence value
 TODO: Postgres integration 1: establish connection using Heroku Postgres URL as env var
 TODO: Postgres integration 2: line score, series standing and last meeting can be just appended

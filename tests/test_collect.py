@@ -53,6 +53,20 @@ def test_fetch_scoreboard_data_has_expected_keys(define_test_dates):
                  "TeamLeaders", "Available", "TicketLinks", "WinProbability")
 
 
+def test_fetch_scoreboard_with_defaults_returns_expected_object():
+    today = date.today().strftime("%Y/%m/%d")
+    assert_that(fetch_scoreboard_data()[today]).contains(
+        "GameHeader", "LineScore", "SeriesStandings", "LastMeeting",
+        "EastConfStandingsByDay", "WestConfStandingsByDay",
+        "TeamLeaders", "Available", "TicketLinks", "WinProbability")
+
+
+def test_fetch_scoreboard_with_defaults_returns_only_one_object():
+    # every object will return a dict of 10 items
+    today = date.today().strftime("%Y/%m/%d")
+    assert_that(len(fetch_scoreboard_data()[today])).is_equal_to(10)
+
+
 def test_fetch_scoreboard_data_values_are_pandas_data_frames(define_test_dates):
     check = []
     for value in fetch_scoreboard_data(
