@@ -5,6 +5,7 @@ Author: Maciej Cisowski
 import os
 import logging.config
 from config import LOGGING, NBA_APP_NAME, DB
+from sys import argv
 
 # create logger for this module and configure it
 logging.config.dictConfig(LOGGING)
@@ -39,3 +40,27 @@ def update_config_with_env_vars(app_name: str = NBA_APP_NAME) -> dict:
             db_out[key] = variables[key]
     logger.info("Config values set")
     return db_out
+
+
+def get_argv() -> dict:
+    """
+    Gets the environment variables, filters for ones starting with
+    <app_name> and returns a dict with them.
+    :return: key : value pairs of env variables starting with
+    <app_name>
+    :rtype: dict
+    """
+    logger.info("Getting runtime parameters")
+    # filter out argvs that start in a way meaningful for this app
+    # and split them out on "="
+    filtered = [i.split("=") for i in argv if i.startswith(
+        "--NBASTART") or i.startswith("--NBAEND")]
+    # strip out the option flags
+    for j in filtered:
+        j[0] = j[0].lstrip("-")
+
+    logger.debug(f"Argv: {argv}")
+    # pack into a dict
+    dicted = {k: v for k, v in filtered}
+    logger.debug(f"Filtered out: {dicted}")
+    return dicted

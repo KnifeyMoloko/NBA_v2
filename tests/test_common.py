@@ -7,7 +7,7 @@ import pytest
 import allure
 import re
 from assertpy import assert_that
-from app.common import update_config_with_env_vars
+from app.common import update_config_with_env_vars, get_argv
 
 
 class TestCommon(object):
@@ -41,7 +41,7 @@ class TestCommon(object):
     def test_get_env_args_returns_dict_with_keywords_starting_with_app_name(self, set_up_env_vars):
         names = list(update_config_with_env_vars().keys())
         non_compliant = [i for i in names if not i.startswith(self.params.get("app_name"))]
-        assert not non_compliant
+        assert_that(non_compliant).is_empty()
 
     def test_get_env_args_does_not_contain_wrong_entry(self, set_up_env_vars_wrong):
         names = list(update_config_with_env_vars().keys())
@@ -49,3 +49,16 @@ class TestCommon(object):
 
     def test_get_env_overwrites_default_values(self, set_up_env_vars):
         assert_that(update_config_with_env_vars()["NBA_DB_URL"]).matches(self.params.get("nba_db_url"))
+
+    def test_get_argv_returns_dict(self, sdate, edate):
+        assert_that(get_argv()).is_type_of(dict)
+
+    def test_get_argv_returns_dict_with_filtered_items_only(self, sdate, edate):
+        from config import NBA_APP_NAME
+        item_names = list(get_argv().keys())
+        non_compliant = [i for i in item_names if not i.startswith(NBA_APP_NAME)]
+        assert_that(non_compliant).is_empty()
+
+    @pytest.mark.parametrize("date_name", ["NBASTARTDATE", "NBAENDDATE"])
+    def test_get_argv_has_date_items(self, date_name, sdate, edate):
+        assert_that(list(get_argv().keys())).contains(date_name)
