@@ -13,7 +13,7 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger('nba.commit')
 
 
-def start_engine(url: str = DB["url"]) -> Engine:
+def start_engine(url: str = DB["NBA_DB_URL"]) -> Engine:
     """
     Creates an SQLAlchemy engine using the given url.
     :param url: like sqlite:// or postgres://<yourURL>

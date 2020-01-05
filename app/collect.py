@@ -6,8 +6,9 @@ Auhtor: Maciej Cisowski
 
 
 import logging.config
-from config import LOGGING
+from config import LOGGING, TIMEOUT_INTERVAL, TIMEOUT_SECS
 from pandas import date_range
+from time import sleep
 from datetime import date
 from nba_api.stats.endpoints import scoreboardv2
 
@@ -17,7 +18,10 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("nba_v2.collect")
 
 
-def fetch_scoreboard_data(start_date: date = None, end_date: date = None) -> dict:
+def fetch_scoreboard_data(start_date: date = None,
+                          end_date: date = None,
+                          timeout_days: int = TIMEOUT_INTERVAL,
+                          timeout_secs: int = TIMEOUT_SECS) -> dict:
     """
     Uses nba-api Scoreboard endpoint to retrieve a dict of all
     Scoreboard items as pandas Data Frames. Scoreboard items are:
@@ -33,7 +37,13 @@ def fetch_scoreboard_data(start_date: date = None, end_date: date = None) -> dic
             ...
         }
     }
+    It breaks up the requests into batches of <timeout_days> and
+    waits <timeout_secs> between the batches to avoid throttling
+    on the server end. This defaults to config values.
 
+    :param timeout_secs: int for number of seconds to wait between
+    request intervals
+    :param timeout_days: number of days in a request interval
     :param start_date: datetime.date object representing start date
     :param end_date: datetime.date object representing end date
     :return: period_out dict of daily dicts with DataFrame objects
@@ -41,7 +51,14 @@ def fetch_scoreboard_data(start_date: date = None, end_date: date = None) -> dic
     """
     period_out = {}
     logger.info("Looping through dates for scoreboard data")
-    for d in date_range(start=start_date, end=end_date).to_pydatetime():
+    d_range = date_range(start=start_date, end=end_date).to_pydatetime()
+    for d in d_range:
+        # sleep for <timeout_secs> upon hitting the <timeout_days> count
+        if (d_range.tolist().index(d) + 1) % timeout_days == 0:
+            logger.debug(f"Sleeping for: {timeout_secs} secs")
+            sleep(timeout_secs)
+            logger.debug("Resuming execution")
+
         day = d.strftime("%Y/%m/%d")
         logger.debug(f"Getting scoreboard data for date: {day}")
         endpoint = scoreboardv2.ScoreboardV2(game_date=day)

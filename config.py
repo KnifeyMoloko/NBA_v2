@@ -6,6 +6,10 @@ Author: Maciej Cisowski
 # app name
 NBA_APP_NAME = "NBA"
 
+# timeout defaults
+TIMEOUT_INTERVAL = 30
+TIMEOUT_SECS = 60
+
 # logger config
 LOGGING = {
     "version": 1,
@@ -26,9 +30,9 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "simple",
-            "maxBytes": 2048,
+            "maxBytes": 20480,
             "backupCount": 3,
-            "filename": "./logs/nba_test.log"
+            "filename": "./tests/logs/nba_test.log"
         }
     },
     "loggers": {
