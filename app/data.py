@@ -61,5 +61,6 @@ def merge_line_score(scoreboard_data: dict) -> dict:
 # from datetime import date
 # x = merge_line_score(fetch_scoreboard_data(start_date=date(2019, 11, 27), end_date=date(2019, 11, 29)))
 # for item in x:
-#     pprint(x[item])
+#     print(item)
+#     pprint(x["2019/11/27"])
 

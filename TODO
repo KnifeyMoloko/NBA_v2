@@ -1,7 +1,10 @@
 TODO: Postgres integration 1: establish connection using Heroku Postgres URL as env var
 TODO: Postgres integration 2: line score, series standing and last meeting can be just appended
 TODO: Postgres integration 3: east and west coast standings should be replaced rather than appedned (make append optional)
+TODO: cleanup for the db tests
+TODO: offset getter for a given table name and engine instance
+TODO: wrapper for the to_sql method that works with get_engine
 TODO: minimum upload validation: row count of target db vs. row count of target db + row count for payload
 TODO: general flow: 1. get scoreboard data frames for lines score and standings, 2. filter the dfs 3. commit to db
 TODO: (Optional) make a SQLAlchemy Model factory class using the headers DFrame, dtype to SQLAlchemy type mappin
-TODO: (Optional) Review the postgres db data typesg
+TODO: (Optional) Review the postgres db data types

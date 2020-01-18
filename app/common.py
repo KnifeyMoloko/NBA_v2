@@ -39,6 +39,7 @@ def update_config_with_env_vars(app_name: str = NBA_APP_NAME) -> dict:
         else:
             db_out[key] = variables[key]
     logger.info("Config values set")
+    logger.info(db_out)
     return db_out
 
 
@@ -54,7 +55,7 @@ def get_argv() -> dict:
     # filter out argvs that start in a way meaningful for this app
     # and split them out on "="
     filtered = [i.split("=") for i in argv if i.startswith(
-        "--NBASTART") or i.startswith("--NBAEND")]
+        "--NBA")]
     # strip out the option flags
     for j in filtered:
         j[0] = j[0].lstrip("-")

@@ -22,15 +22,25 @@ def start_engine(url: str = DB["NBA_DB_URL"]) -> Engine:
     logger.info(f"Establishing db engine for: {url}")
     return create_engine(url, echo=True)
 
-URL = "postgres://ltjeysrdpkmdxq:5bd500e4e1ffb23ff9d49afa1cbe574320a8e5a6eee77f16d16ac5db114690da@ec2-174-129-18-98.compute-1.amazonaws.com:5432/ddbv6debpheef4"
 
-from sqlalchemy.orm import sessionmaker
-from models.scoreboard import LineScore
-eng = start_engine(URL)
-Session = sessionmaker(bind=eng)
-session = Session()
-q = session.query(LineScore)
-for instance in session.query(LineScore).order_by(LineScore.id):
-    print(instance.away_pts)
+def get_db_table_offset(db_engine: Engine, table: str) -> int:
+    """
+    Query the given table with an SQLAlechemy engine connection
+    and return the record offset for that table.
+    :param db_engine: SQLAlchemy engine used to connect to the db
+    :param table: name of the queried tabled
+    :return: offest (count of) rows of the table
+    :rtype: int
+    """
+    return 0
+
+# from sqlalchemy.orm import sessionmaker
+# from models.scoreboard import LineScore
+# eng = start_engine(URL)
+# Session = sessionmaker(bind=eng)
+# session = Session()
+# q = session.query(LineScore)
+# for instance in session.query(LineScore).order_by(LineScore.id):
+#     print(instance.away_pts)
 
 
