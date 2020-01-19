@@ -16,9 +16,6 @@ from app.collect import fetch_scoreboard_data
 
 class TestDB(object):
     lookup = {
-        "SQLiteTableNumQuery": "SELECT name FROM sqlite_master "
-                               "WHERE type='table' "
-                               "AND name NOT LIKE 'sqlite_%';",
         "LineScore": {
             "df": "mergedLineScore",
             "table": "line_score",
@@ -59,9 +56,8 @@ class TestDB(object):
         engine = start_engine(get_db_envs['NBA_DB_URL'])
 
         def drop_added_tables():
-            for t in engine.execute(
-                    self.lookup["SQLiteTableNumQuery"]).fetchall():
-                engine.execute(f"DROP TABLE {t[0]};")
+            for t in engine.table_names():
+                engine.execute(f"DROP TABLE {t};")
 
         request.addfinalizer(drop_added_tables)
         return engine
@@ -83,9 +79,7 @@ class TestDB(object):
 
     def test_committing_creates_the_expected_tables(self, get_engine, get_data_frame):
         db = get_engine
-        pre_commit_table_count = len(db.execute(
-            self.lookup["SQLiteTableNumQuery"]
-        ).fetchall())
+        pre_commit_table_count = len(db.table_names())
 
         line_score = get_data_frame[self.lookup["LineScore"]["df"]]
         series_standing = get_data_frame[self.lookup["SeriesStandings"]["df"]]
@@ -100,9 +94,7 @@ class TestDB(object):
                                if_exists='replace',
                                con=db)
 
-        post_commit_table_count = len(db.execute(
-            self.lookup["SQLiteTableNumQuery"]).fetchall()
-        )
+        post_commit_table_count = len(db.table_names())
 
         assert_that(
             post_commit_table_count - pre_commit_table_count).is_equal_to(2)

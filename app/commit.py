@@ -32,7 +32,16 @@ def get_db_table_offset(db_engine: Engine, table: str) -> int:
     :return: offest (count of) rows of the table
     :rtype: int
     """
-    return 0
+    logger.debug(f"Checking if the table {table} exists on the db.")
+    if db_engine.has_table(table):
+        # this will return something like [(6, )], therefore the awkward accessors
+        offset = db_engine.execute(
+            f"SELECT COUNT(*) FROM {table};").fetchall()[0][0]
+        logger.debug(f"Offset for table {table} is {offset}")
+        return offset
+    else:
+        logger.exception(f"Did not find table: {table} in db.")
+        raise LookupError(f"Did not find table: {table} in db.")
 
 # from sqlalchemy.orm import sessionmaker
 # from models.scoreboard import LineScore
