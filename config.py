@@ -75,6 +75,11 @@ DB = {
             "name": "EastConfStandingsByDay",
             "table": "east_conference_standings_by_day",
             "action": DbActions.REPLACE
+        },
+        "last_meeting": {
+            "name": "LastMeeting",
+            "table": "last_meeting",
+            "action": DbActions.APPEND
         }
     }
 }

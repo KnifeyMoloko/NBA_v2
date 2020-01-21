@@ -1,8 +1,4 @@
 TODO: Postgres integration 1: establish connection using Heroku Postgres URL as env var
-TODO: Postgres integration 2: line score, series standing and last meeting can be just appended
-TODO: Postgres integration 3: east and west coast standings should be replaced rather than appedned (make append optional)
-TODO: add mapping between df names, table names and actions in config (maybe just unpack list? as in ...
-TODO: name, table, action = *list
 TODO: add offset count and table list processing to a decorator for the post_data function
 TODO: wrapper for the to_sql method that works with get_engine
 TODO: minimum upload validation: row count of target db vs. row count of target db + row count for payload
