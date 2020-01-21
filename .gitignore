@@ -134,3 +134,6 @@ tests/logs
 
 # PyCharm config files
 .idea/
+
+# benchmarking data
+.benchmarks

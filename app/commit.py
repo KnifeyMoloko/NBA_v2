@@ -2,9 +2,11 @@
 Database connection setup for the NBA_v2 app.
 Author: Maciej Cisowski
 """
-from config import DB, LOGGING
+from pandas import DataFrame
+from config import DB, LOGGING, DbActions
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
 import logging.config
 
 
@@ -42,6 +44,29 @@ def get_db_table_offset(db_engine: Engine, table: str) -> int:
     else:
         logger.exception(f"Did not find table: {table} in db.")
         raise LookupError(f"Did not find table: {table} in db.")
+
+
+def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> dict:
+    """
+    Attempts to post data to a SQL database using an SQLAlchemy
+    engine. Returns a dict pair of {table: DataFrame size} that
+    was processed.
+    :param db: SQLAlechemy engine to call
+    :param data: single pandas DataFrame to be posted
+    :param table: the table name to use
+    :param if_exists one of the DB_ACTIONS enum values for modifying
+    how an existing db table should be treated
+    :return: a dict pair of {table: DataFrame size}
+    :rtype: dict
+    """
+    logger.info(f"Posting data to table: {table}.")
+    try:
+        data.to_sql(name=table, con=db, schema=None, if_exists=if_exists,
+                    index=True)
+    except OperationalError or SQLAlchemyError:
+        logger.warning(f"Error while posting data to table: {table}")
+        return {table: 0}
+    return {table: len(data.index)}
 
 # from sqlalchemy.orm import sessionmaker
 # from models.scoreboard import LineScore
