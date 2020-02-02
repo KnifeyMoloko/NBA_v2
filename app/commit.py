@@ -12,7 +12,7 @@ import logging.config
 
 # create logger for this module and configure it
 logging.config.dictConfig(LOGGING)
-logger = logging.getLogger('nba.commit')
+logger = logging.getLogger("nba_v2.commit")
 
 
 def start_engine(url: str = DB["NBA_DB_URL"]) -> Engine:
@@ -68,13 +68,90 @@ def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> d
         return {table: 0}
     return {table: len(data.index)}
 
+
+def batch_upload(data: DataFrame, db: Engine, batch_def: list) -> dict:
+    """
+    Takes the output of fetch_scoreboard_data() as it's input, along
+    with a SQLAlchemy Engine instance and a definition of what items
+    are to be uploaded to the db.
+    It will get the current offset in the target db, extract the item
+    to be uploaded, attempt to upload it to the db and then validate
+    the process with another get of the db offset. The result is a
+    dict of the "before" and "after" offsets, indexed by upload item,
+    and a "success" boolean, if the difference between offsets is
+    equal to the size of the uploaded item.
+
+    :param batch_def: a dict picking the items from Scoreboard that
+    need to be uploaded
+    :param data: Scoreboard data from fetch_scoreboard_data(),
+    indexed by date
+    :param db: SQLAlchemy instance of Engine
+    :return: mapping of {"item": "init_offset", "after_offset",
+    "success"}
+    :rtype: dict
+    """
+
+    # reverse mapping for ease of access
+    named = {i["name"]: i for i in batch_def}
+    # output
+    batch_upload_results = {}
+
+    for date_item in data:
+        logger.info("Batch processing: looping through date items in data.")
+        for item in date_item:
+            logger.info("Looping through items in date")
+            if item in named:
+                logger.debug(f"Getting item details for {item}.")
+                pre_offset = get_db_table_offset(db, named[item]["table"])
+                post_offset = 0
+                size = data[item].count()[0]
+                action = named[item]["action"]
+                validate = True if action is not DbActions.REPLACE else False
+                try:
+                    logger.debug(f"Attempting db upload for {item}.")
+                    post_data(db=db,
+                              data=data[item],
+                              table=named[item]["table"],
+                              if_exists=action.value)
+                    logger.debug(f"Getting post offset for {item}.")
+                    post_offset = get_db_table_offset(
+                        db, named[item]["table"])
+                    logger.debug("Establishing success.")
+                    success = False if \
+                        validate and not (post_offset - pre_offset == size) \
+                        else True
+                except OperationalError or SQLAlchemyError:
+                    logger.error("Errored out while performing batch upload. "
+                                 "See logs.")
+                    success = False
+                finally:
+                    output = {
+                        "pre_offset": pre_offset,
+                        "post_offset": post_offset,
+                        "size": size,
+                        "success": success
+                    }
+                    # pack up the output to output dict
+                    batch_upload_results[item] = output
+    return batch_upload_results
+
+
 # from sqlalchemy.orm import sessionmaker
-# from models.scoreboard import LineScore
-# eng = start_engine(URL)
+# from app.common import update_config_with_env_vars
+# import pandas as pd
+# eng = start_engine(update_config_with_env_vars()["NBA_DB_URL"])
 # Session = sessionmaker(bind=eng)
 # session = Session()
-# q = session.query(LineScore)
-# for instance in session.query(LineScore).order_by(LineScore.id):
-#     print(instance.away_pts)
-
+# df1 = pd.DataFrame.from_dict({"1": ["woah", "noah"]})
+# df2 = pd.DataFrame.from_dict({})
+# df1.to_sql("empty_upload", eng, if_exists="replace")
+# size1 = session.execute("SELECT COUNT(*) FROM empty_upload").fetchall()
+# df2.to_sql("empty_upload", eng, if_exists="append")
+# df2.to_sql("empty_upload", eng, if_exists="append")
+# df2.to_sql("empty_upload", eng, if_exists="append")
+# df2.to_sql("empty_upload", eng, if_exists="append")
+# size2 = session.execute("SELECT COUNT(*) FROM empty_upload").fetchall()
+# print(size1, size2)
+# session.commit()
+# session.close()
 

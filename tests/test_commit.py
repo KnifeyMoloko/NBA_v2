@@ -9,10 +9,10 @@ from assertpy import assert_that
 from sqlalchemy.engine import Connection
 from datetime import date
 from app.data import merge_line_score
-from app.commit import start_engine, get_db_table_offset, post_data
+from app.commit import start_engine, get_db_table_offset, post_data, batch_upload
 from app.common import update_config_with_env_vars
 from app.collect import fetch_scoreboard_data
-from config import DB
+from config import DB, BATCHES
 
 
 @pytest.fixture()
@@ -22,7 +22,17 @@ def get_data_frame():
     end = date(2019, 12, 3)
     middle = date(2019, 12, 2).strftime(dfmt)
     return merge_line_score(
-        fetch_scoreboard_data(start_date=start, end_date=end))[middle]
+        fetch_scoreboard_data(start_date=start, end_date=end))[middle]\
+
+
+@pytest.fixture()
+def get_multi_data_frames():
+    dfmt = "%Y/%m/%d"
+    start = date(2019, 12, 1)
+    end = date(2019, 12, 3)
+    middle = date(2019, 12, 2).strftime(dfmt)
+    return merge_line_score(
+        fetch_scoreboard_data(start_date=start, end_date=end))
 
 
 @pytest.fixture()
@@ -40,6 +50,39 @@ def get_engine(get_db_envs, request):
 
     request.addfinalizer(drop_added_tables)
     return engine
+
+
+@pytest.fixture()
+def initial_upload_to_dbs(get_engine, get_data_frame):
+    df_line_score = get_data_frame[DB["NBA_DB_MAPPING"]["line_score"]["name"]]
+    df_series_standings = get_data_frame[DB["NBA_DB_MAPPING"][
+        "series_standings"]["name"]]
+    df_last_meeting = get_data_frame[DB["NBA_DB_MAPPING"][
+        "last_meeting"]["name"]]
+    df_west_conf_standings = get_data_frame[DB["NBA_DB_MAPPING"][
+        "west_conference_standings_by_day"]["name"]]
+    df_east_conf_standings = get_data_frame[DB["NBA_DB_MAPPING"][
+        "east_conference_standings_by_day"]["name"]]
+    tables = [
+        DB["NBA_DB_MAPPING"]["line_score"]["table"],
+        DB["NBA_DB_MAPPING"]["series_standings"]["table"],
+        DB["NBA_DB_MAPPING"]["last_meeting"]["table"],
+        DB["NBA_DB_MAPPING"]["west_conference_standings_by_day"]["table"],
+        DB["NBA_DB_MAPPING"]["east_conference_standings_by_day"]["table"],
+    ]
+    actions = [
+        DB["NBA_DB_MAPPING"]["line_score"]["action"],
+        DB["NBA_DB_MAPPING"]["series_standings"]["action"],
+        DB["NBA_DB_MAPPING"]["last_meeting"]["action"],
+        DB["NBA_DB_MAPPING"]["west_conference_standings_by_day"]["action"],
+        DB["NBA_DB_MAPPING"]["east_conference_standings_by_day"]["action"],
+    ]
+    data_list = [df_line_score, df_series_standings, df_last_meeting,
+                 df_west_conf_standings, df_east_conf_standings]
+    data_table_action_list = zip(tables, data_list, actions)
+    for item in data_table_action_list:
+        item[1].to_sql(name=item[0], schema=None, if_exists=item[2].value,
+                       con=get_engine)
 
 
 def test_connection_for_local_dev_db(get_engine):
@@ -131,3 +174,24 @@ def test_post_data_with_one_table_replace_action_returns_zero_offset(
         DB["NBA_DB_MAPPING"]["east_conference_standings_by_day"]["table"])
 
     assert_that(post_offset - init_offset).is_equal_to(0)
+
+
+def test_batch_upload_for_one_day(get_data_frame,
+                                  get_engine,
+                                  initial_upload_to_dbs):
+    result = batch_upload(data=get_data_frame, db=get_engine,
+                          batch_def=BATCHES["default"])
+    failures = [r["success"] for r in [result[i] for i in result]
+                if r["success"] is False]
+    assert_that(failures).is_empty()
+
+
+def test_batch_upload_for_many_days(get_multi_data_frames,
+                                    get_engine,
+                                    initial_upload_to_dbs):
+    result = batch_upload(data=get_multi_data_frames,
+                          db=get_engine,
+                          batch_def=BATCHES["default"])
+    failures = [r["success"] for r in [result[i] for i in result]
+                if r["success"] is False]
+    assert_that(failures).is_empty()

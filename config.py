@@ -10,7 +10,7 @@ NBA_APP_NAME = "NBA"
 
 # timeout defaults
 TIMEOUT_INTERVAL = 30
-TIMEOUT_SECS = 60
+TIMEOUT_SECS = 300
 
 # logger config
 LOGGING = {
@@ -32,8 +32,8 @@ LOGGING = {
             "level": "DEBUG",
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "simple",
-            "maxBytes": 20480,
-            "backupCount": 3,
+            "maxBytes": 10480,
+            "backupCount": 5,
             "filename": "./tests/logs/nba_test.log"
         }
     },
@@ -43,6 +43,18 @@ LOGGING = {
             'handlers': ['console', 'file']
         }
     }
+}
+
+# custom request headers
+request_header = {
+    'Host': 'stats.nba.com',
+    'Connection': 'keep-alive',
+    #'Upgrade-Insecure-Requests': '1',
+    "Referer": "https://stats.nba.com",
+    "Origin": "https://stats.nba.com",
+    "x-nba-stats-token": "true",
+    "x-nba-stats-origin": "stats",
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36',
 }
 
 
@@ -82,4 +94,12 @@ DB = {
             "action": DbActions.APPEND
         }
     }
+}
+
+BATCHES = {
+    "default": [DB["NBA_DB_MAPPING"]["line_score"],
+                DB["NBA_DB_MAPPING"]["series_standings"],
+                DB["NBA_DB_MAPPING"]["last_meeting"],
+                DB["NBA_DB_MAPPING"]["west_conference_standings_by_day"],
+                DB["NBA_DB_MAPPING"]["east_conference_standings_by_day"]]
 }
