@@ -1,10 +1,9 @@
 pipeline {
-    agent: any
-    node {
-        stages {
-            stage('Hello') {
-                echo "Hello"
-            }
+    agent
+    stages {
+        stage('Hello') {
+            echo "Hello"
+            sh 'pwd'
         }
     }
 }
