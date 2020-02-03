@@ -6,7 +6,7 @@ Auhtor: Maciej Cisowski
 
 
 import logging.config
-from config import LOGGING, TIMEOUT_INTERVAL, TIMEOUT_SECS
+from config import LOGGING, TIMEOUT_INTERVAL, TIMEOUT_SECS, request_header
 from pandas import date_range
 from time import sleep
 from datetime import date
@@ -63,7 +63,9 @@ def fetch_scoreboard_data(start_date: date = date.today(),
 
         day = d.strftime("%Y/%m/%d")
         logger.debug(f"Getting scoreboard data for date: {day}")
-        endpoint = scoreboardv2.ScoreboardV2(game_date=day)
+        endpoint = scoreboardv2.ScoreboardV2(game_date=day,
+                                             headers=request_header,
+                                             timeout=300)
         headers = endpoint.get_available_data()
         frames = endpoint.get_data_frames()
         logger.debug(f"Packing output for {d} into dict")

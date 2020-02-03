@@ -39,12 +39,13 @@ def update_config_with_env_vars(app_name: str = NBA_APP_NAME) -> dict:
         else:
             db_out[key] = variables[key]
     logger.info("Config values set")
+    logger.info(db_out)
     return db_out
 
 
-def get_argv() -> dict:
+def get_argv(app_name: str = NBA_APP_NAME) -> dict:
     """
-    Gets the environment variables, filters for ones starting with
+    Gets the runtime parameters, filters for ones starting with
     <app_name> and returns a dict with them.
     :return: key : value pairs of env variables starting with
     <app_name>
@@ -54,7 +55,7 @@ def get_argv() -> dict:
     # filter out argvs that start in a way meaningful for this app
     # and split them out on "="
     filtered = [i.split("=") for i in argv if i.startswith(
-        "--NBASTART") or i.startswith("--NBAEND")]
+        f"--{app_name}")]
     # strip out the option flags
     for j in filtered:
         j[0] = j[0].lstrip("-")
