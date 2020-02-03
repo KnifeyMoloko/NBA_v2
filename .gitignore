@@ -137,3 +137,6 @@ tests/logs
 
 # benchmarking data
 .benchmarks
+
+# shell scripts
+*.sh

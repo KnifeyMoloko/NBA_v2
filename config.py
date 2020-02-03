@@ -9,13 +9,13 @@ from enum import Enum
 NBA_APP_NAME = "NBA"
 
 # timeout defaults
-TIMEOUT_INTERVAL = 30
-TIMEOUT_SECS = 300
+TIMEOUT_INTERVAL = 15
+TIMEOUT_SECS = 180
 
 # logger config
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": True,
+    "disable_existing_loggers": False,
     "formatters": {
         "simple": {
             "format": '%(asctime)s::%(name)s::%(levelname)s::%(message)s',
@@ -67,6 +67,7 @@ class DbActions(Enum):
 # default values for the db config; overwrite with same-named env vars for secrets
 DB = {
     "NBA_DB_URL": 'sqlite://',
+    "NBA_MONITOR_DB_URL": "sqlite://",
     "NBA_DB_MAPPING": {
         "line_score": {
             "name": "mergedLineScore",
@@ -91,6 +92,11 @@ DB = {
         "last_meeting": {
             "name": "LastMeeting",
             "table": "last_meeting",
+            "action": DbActions.APPEND
+        },
+        "monitor": {
+            "name": "monitor",
+            "table": "monitor",
             "action": DbActions.APPEND
         }
     }

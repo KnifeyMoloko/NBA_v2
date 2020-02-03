@@ -43,7 +43,8 @@ def get_db_table_offset(db_engine: Engine, table: str) -> int:
         return offset
     else:
         logger.exception(f"Did not find table: {table} in db.")
-        raise LookupError(f"Did not find table: {table} in db.")
+        #raise LookupError(f"Did not find table: {table} in db.")
+        return 0
 
 
 def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> dict:
@@ -69,7 +70,7 @@ def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> d
     return {table: len(data.index)}
 
 
-def batch_upload(data: DataFrame, db: Engine, batch_def: list) -> dict:
+def batch_upload(data: dict, db: Engine, batch_def: list) -> dict:
     """
     Takes the output of fetch_scoreboard_data() as it's input, along
     with a SQLAlchemy Engine instance and a definition of what items
@@ -84,7 +85,7 @@ def batch_upload(data: DataFrame, db: Engine, batch_def: list) -> dict:
     :param batch_def: a dict picking the items from Scoreboard that
     need to be uploaded
     :param data: Scoreboard data from fetch_scoreboard_data(),
-    indexed by date
+    indexed by date, dict
     :param db: SQLAlchemy instance of Engine
     :return: mapping of {"item": "init_offset", "after_offset",
     "success"}
@@ -97,20 +98,22 @@ def batch_upload(data: DataFrame, db: Engine, batch_def: list) -> dict:
     batch_upload_results = {}
 
     for date_item in data:
-        logger.info("Batch processing: looping through date items in data.")
-        for item in date_item:
-            logger.info("Looping through items in date")
-            if item in named:
-                logger.debug(f"Getting item details for {item}.")
+        logger.info(f"Batch processing: looping through date items in {date_item}.")
+        for item in data[date_item]:
+            logger.info(f"Looping through items...")
+            if item in named and not data[date_item][item].empty:
+                logger.debug(f"Getting item details...")
                 pre_offset = get_db_table_offset(db, named[item]["table"])
                 post_offset = 0
-                size = data[item].count()[0]
+                success = False
+                size = data[date_item][item].count()[0]
                 action = named[item]["action"]
+                results = {}
                 validate = True if action is not DbActions.REPLACE else False
                 try:
                     logger.debug(f"Attempting db upload for {item}.")
                     post_data(db=db,
-                              data=data[item],
+                              data=data[date_item][item],
                               table=named[item]["table"],
                               if_exists=action.value)
                     logger.debug(f"Getting post offset for {item}.")
@@ -132,26 +135,11 @@ def batch_upload(data: DataFrame, db: Engine, batch_def: list) -> dict:
                         "success": success
                     }
                     # pack up the output to output dict
-                    batch_upload_results[item] = output
+                    results[item] = output
+            else:
+                logger.debug(f"Item: {item} not found in {named}")
+        if results:
+            batch_upload_results[date_item] = results
     return batch_upload_results
 
-
-# from sqlalchemy.orm import sessionmaker
-# from app.common import update_config_with_env_vars
-# import pandas as pd
-# eng = start_engine(update_config_with_env_vars()["NBA_DB_URL"])
-# Session = sessionmaker(bind=eng)
-# session = Session()
-# df1 = pd.DataFrame.from_dict({"1": ["woah", "noah"]})
-# df2 = pd.DataFrame.from_dict({})
-# df1.to_sql("empty_upload", eng, if_exists="replace")
-# size1 = session.execute("SELECT COUNT(*) FROM empty_upload").fetchall()
-# df2.to_sql("empty_upload", eng, if_exists="append")
-# df2.to_sql("empty_upload", eng, if_exists="append")
-# df2.to_sql("empty_upload", eng, if_exists="append")
-# df2.to_sql("empty_upload", eng, if_exists="append")
-# size2 = session.execute("SELECT COUNT(*) FROM empty_upload").fetchall()
-# print(size1, size2)
-# session.commit()
-# session.close()
 
