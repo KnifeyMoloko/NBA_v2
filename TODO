@@ -1,4 +1,0 @@
-TODO: commit batch upload results to a separate db table
-TODO: simplify the name, table, action triplet by adding them as fields to the models module
-TODO: (Optional) make a SQLAlchemy Model factory class using the headers DFrame, dtype to SQLAlchemy type mappin
-TODO: (Optional) Review the postgres db data types

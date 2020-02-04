@@ -4,8 +4,11 @@ Author: Maciej Cisowski
 """
 from pandas import DataFrame
 from config import DB, LOGGING, DbActions
+from models.monitor import Monitor, metadata
+from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 import logging.config
 
@@ -31,7 +34,7 @@ def get_db_table_offset(db_engine: Engine, table: str) -> int:
     and return the record offset for that table.
     :param db_engine: SQLAlchemy engine used to connect to the db
     :param table: name of the queried tabled
-    :return: offest (count of) rows of the table
+    :return: offset (count of) rows of the table
     :rtype: int
     """
     logger.debug(f"Checking if the table {table} exists on the db.")
@@ -43,8 +46,41 @@ def get_db_table_offset(db_engine: Engine, table: str) -> int:
         return offset
     else:
         logger.exception(f"Did not find table: {table} in db.")
-        #raise LookupError(f"Did not find table: {table} in db.")
         return 0
+
+
+def post_monitor_data(db: Engine, data: Monitor) -> bool:
+    """
+    Posts batch monitoring data to a monitor db.
+    :param db: SQLAlchemy Engine for the connection
+    :param data: Monitor instance for stats
+    :return: success or failure
+    ":rtype: bool
+    """
+
+    # create the necessary tables
+    try:
+        metadata.create_all(bind=db,
+                            tables=[data.__table__],
+                            checkfirst=True)
+    except OperationalError or SQLAlchemyError:
+        logger.error("Could not create db table for monitor stats.")
+        return False
+    # create session for issuing commands to the db
+    Session = sessionmaker(bind=db, expire_on_commit=True)
+    session = Session()
+    success = False
+    try:
+        logger.info('Attempting to add and commit monitor stats...')
+        session.add(data)
+        session.commit()
+        success = True
+    except OperationalError or SQLAlchemyError:
+        logger.error("Errored out while trying to commit monitor stats.")
+        return False
+    finally:
+        session.close()
+    return success
 
 
 def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> dict:
@@ -52,7 +88,7 @@ def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> d
     Attempts to post data to a SQL database using an SQLAlchemy
     engine. Returns a dict pair of {table: DataFrame size} that
     was processed.
-    :param db: SQLAlechemy engine to call
+    :param db: SQLAlchemy engine to call
     :param data: single pandas DataFrame to be posted
     :param table: the table name to use
     :param if_exists one of the DB_ACTIONS enum values for modifying
@@ -70,7 +106,7 @@ def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> d
     return {table: len(data.index)}
 
 
-def batch_upload(data: dict, db: Engine, batch_def: list) -> dict:
+def batch_upload(data: dict, db: Engine, batch_def: list) -> list:
     """
     Takes the output of fetch_scoreboard_data() as it's input, along
     with a SQLAlchemy Engine instance and a definition of what items
@@ -87,17 +123,19 @@ def batch_upload(data: dict, db: Engine, batch_def: list) -> dict:
     :param data: Scoreboard data from fetch_scoreboard_data(),
     indexed by date, dict
     :param db: SQLAlchemy instance of Engine
-    :return: mapping of {"item": "init_offset", "after_offset",
-    "success"}
-    :rtype: dict
+    :return: list of Monitor SQLAlchemy objects
+    :rtype: list
     """
 
     # reverse mapping for ease of access
     named = {i["name"]: i for i in batch_def}
     # output
-    batch_upload_results = {}
+    batch_upload_results = []
 
     for date_item in data:
+        # cast the date string into a date object for db compliance
+        date_object = datetime.strptime(date_item, "%Y/%m/%d").date()
+
         logger.info(f"Batch processing: looping through date items in {date_item}.")
         for item in data[date_item]:
             logger.info(f"Looping through items...")
@@ -108,7 +146,6 @@ def batch_upload(data: dict, db: Engine, batch_def: list) -> dict:
                 success = False
                 size = data[date_item][item].count()[0]
                 action = named[item]["action"]
-                results = {}
                 validate = True if action is not DbActions.REPLACE else False
                 try:
                     logger.debug(f"Attempting db upload for {item}.")
@@ -128,18 +165,16 @@ def batch_upload(data: dict, db: Engine, batch_def: list) -> dict:
                                  "See logs.")
                     success = False
                 finally:
-                    output = {
-                        "pre_offset": pre_offset,
-                        "post_offset": post_offset,
-                        "size": size,
-                        "success": success
-                    }
                     # pack up the output to output dict
-                    results[item] = output
+                    monitor = Monitor(
+                        date=date_object,
+                        item=str(item),
+                        pre_offset=int(pre_offset),
+                        post_offset=int(post_offset),
+                        size=int(size),
+                        success=bool(success)
+                    )
+                    batch_upload_results.append(monitor)
             else:
                 logger.debug(f"Item: {item} not found in {named}")
-        if results:
-            batch_upload_results[date_item] = results
     return batch_upload_results
-
-
