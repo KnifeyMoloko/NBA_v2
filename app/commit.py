@@ -21,7 +21,8 @@ logger = logging.getLogger("nba_v2.commit")
 def start_engine(url: str = DB["NBA_DB_URL"]) -> Engine:
     """
     Creates an SQLAlchemy engine using the given url.
-    :param url: like sqlite:// or postgres://<yourURL>
+    :param url: like sqlite:// or postgres://<yourURL>, defaults to
+    the NBA_DB_URL value in config.py
     :return: SQLAlchemy Engine instance
     """
     logger.info(f"Establishing db engine for: {url}")
@@ -30,7 +31,7 @@ def start_engine(url: str = DB["NBA_DB_URL"]) -> Engine:
 
 def get_db_table_offset(db_engine: Engine, table: str) -> int:
     """
-    Query the given table with an SQLAlechemy engine connection
+    Query the given table with an SQLAlchemy engine connection
     and return the record offset for that table.
     :param db_engine: SQLAlchemy engine used to connect to the db
     :param table: name of the queried tabled
@@ -39,7 +40,7 @@ def get_db_table_offset(db_engine: Engine, table: str) -> int:
     """
     logger.debug(f"Checking if the table {table} exists on the db.")
     if db_engine.has_table(table):
-        # this will return something like [(6, )], therefore the awkward accessors
+        # this will return something like [(6, )], hence it's awkward
         offset = db_engine.execute(
             f"SELECT COUNT(*) FROM {table};").fetchall()[0][0]
         logger.debug(f"Offset for table {table} is {offset}")
@@ -83,7 +84,10 @@ def post_monitor_data(db: Engine, data: Monitor) -> bool:
     return success
 
 
-def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> dict:
+def post_data(db: Engine,
+              data: DataFrame,
+              table: str,
+              if_exists=DbActions) -> dict:
     """
     Attempts to post data to a SQL database using an SQLAlchemy
     engine. Returns a dict pair of {table: DataFrame size} that
@@ -98,7 +102,7 @@ def post_data(db: Engine, data: DataFrame, table: str, if_exists=DbActions) -> d
     """
     logger.info(f"Posting data to table: {table}.")
     try:
-        data.to_sql(name=table, con=db, schema=None, if_exists=if_exists,
+        data.to_sql(name=table, con=db, schema=None, if_exists=if_exists.value,
                     index=True)
     except OperationalError or SQLAlchemyError:
         logger.warning(f"Error while posting data to table: {table}")
@@ -113,7 +117,7 @@ def batch_upload(data: dict, db: Engine, batch_def: list) -> list:
     are to be uploaded to the db.
     It will get the current offset in the target db, extract the item
     to be uploaded, attempt to upload it to the db and then validate
-    the process with another get of the db offset. The result is a
+    the process with another fetch of the db offset. The result is a
     dict of the "before" and "after" offsets, indexed by upload item,
     and a "success" boolean, if the difference between offsets is
     equal to the size of the uploaded item.
@@ -152,7 +156,7 @@ def batch_upload(data: dict, db: Engine, batch_def: list) -> list:
                     post_data(db=db,
                               data=data[date_item][item],
                               table=named[item]["table"],
-                              if_exists=action.value)
+                              if_exists=action)
                     logger.debug(f"Getting post offset for {item}.")
                     post_offset = get_db_table_offset(
                         db, named[item]["table"])
@@ -165,7 +169,7 @@ def batch_upload(data: dict, db: Engine, batch_def: list) -> list:
                                  "See logs.")
                     success = False
                 finally:
-                    # pack up the output to output dict
+                    logger.info("Packing monitor data...")
                     monitor = Monitor(
                         date=date_object,
                         item=str(item),

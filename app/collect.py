@@ -3,13 +3,11 @@ Functions for collecting the endpoint's data from NBA.com
 using nba-api by Swar Patel (swar): https://github.com/swar/nba_api
 Auhtor: Maciej Cisowski
 """
-
-
 import logging.config
 from config import LOGGING, TIMEOUT_INTERVAL, TIMEOUT_SECS, request_header
 from pandas import date_range
 from time import sleep
-from datetime import date
+from datetime import date, timedelta
 from nba_api.stats.endpoints import scoreboardv2
 
 
@@ -18,8 +16,8 @@ logging.config.dictConfig(LOGGING)
 logger = logging.getLogger("nba_v2.collect")
 
 
-def fetch_scoreboard_data(start_date: date = date.today(),
-                          end_date: date = date.today(),
+def fetch_scoreboard_data(start_date: date = date.today() - timedelta(days=1),
+                          end_date: date = date.today() - timedelta(days=1),
                           timeout_days: int = TIMEOUT_INTERVAL,
                           timeout_secs: int = TIMEOUT_SECS) -> dict:
     """
@@ -45,9 +43,9 @@ def fetch_scoreboard_data(start_date: date = date.today(),
     request intervals
     :param timeout_days: number of days in a request interval
     :param start_date: datetime.date object representing start date,
-    defaults to today
+    defaults to yesterday
     :param end_date: datetime.date object representing end date,
-    defaults to today
+    defaults to yesterday
     :return: period_out dict of daily dicts with DataFrame objects
     :rtype: dict
     """

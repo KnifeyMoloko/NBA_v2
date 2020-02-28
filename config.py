@@ -24,12 +24,12 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.StreamHandler",
             "formatter": "simple"
         },
         "file": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "simple",
             "maxBytes": 10480,
@@ -39,7 +39,7 @@ LOGGING = {
     },
     "loggers": {
         '': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'handlers': ['console', 'file']
         }
     }
@@ -49,7 +49,6 @@ LOGGING = {
 request_header = {
     'Host': 'stats.nba.com',
     'Connection': 'keep-alive',
-    #'Upgrade-Insecure-Requests': '1',
     "Referer": "https://stats.nba.com",
     "Origin": "https://stats.nba.com",
     "x-nba-stats-token": "true",
@@ -58,6 +57,7 @@ request_header = {
 }
 
 
+# narrow down the db actions using an Enum
 class DbActions(Enum):
     FAIL = "fail"
     REPLACE = "replace"
@@ -102,6 +102,7 @@ DB = {
     }
 }
 
+# batches definitions for different scoped runs
 BATCHES = {
     "default": [DB["NBA_DB_MAPPING"]["line_score"],
                 DB["NBA_DB_MAPPING"]["series_standings"],

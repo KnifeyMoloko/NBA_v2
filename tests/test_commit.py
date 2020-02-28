@@ -25,6 +25,7 @@ def get_data_frame():
         fetch_scoreboard_data(start_date=start, end_date=end))[middle]\
 
 
+
 @pytest.fixture()
 def get_multi_data_frames():
     dfmt = "%Y/%m/%d"
